@@ -5,6 +5,7 @@ out vec4 color;
 
 void main()
 {
-    gl_Position = in_pos;
+    gl_Position.x = in_pos.x;
+    gl_Position.y = in_pos.y;
     color = vec4(1, 1, 0, 1);
 }

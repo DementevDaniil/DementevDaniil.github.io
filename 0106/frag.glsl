@@ -3,6 +3,11 @@ precision highp float;
 out vec4 o_color;
 in vec4 color;
 uniform float time;
+uniform float dx;
+uniform float dy;
+uniform float mx;
+uniform float my;
+uniform float scale;
 
 float
     W = 500.0,
@@ -27,8 +32,10 @@ void main()
 {
   vec2 C = vec2(0.35 + 0.08 * sin(time + 3.0), 0.39 + 0.08 * sin(1.1 * time));
 
-  float a = X0 + gl_FragCoord.x * (X1 - X0) / W;
-  float b = Y0 + gl_FragCoord.y * (Y1 - Y0) / H;
+  vec2 dist = vec2(gl_FragCoord.x + 0.0,
+                   gl_FragCoord.y + 0.0);
+  float a = X0 + (scale * dist.x - dx) * (X1 - X0) / W;
+  float b = Y0 + (scale * dist.y + dy) * (Y1 - Y0) / H;
   vec2 Z = vec2(a, b);
   float n = Julia(Z, C) / 256.0;
   o_color = vec4(n / 128.0, n, n, 1);

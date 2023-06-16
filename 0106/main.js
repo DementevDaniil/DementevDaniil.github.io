@@ -21,17 +21,55 @@ async function loadShaderAsync(shaderName) {
   }
 }
 
-function wheelResponse(e) {
-}
-
-function moveResponse(e) {
-  
-}
-
 function initGL() {
     const canvas = document.getElementById("glCanvas");
     const gl = canvas.getContext("webgl2");
+
+    let isMouseDown = false
+    let dx = 0
+    let dy = 0
+    let curx = 250
+    let cury = 250
+    let scale = 1
+    let x = 0
+    let y = 0
+    let mx = 0
+    let my = 0
+
+    canvas.addEventListener("mousedown", (e) => {
+      x = e.offsetX;
+      y = e.offsetY;
+      isMouseDown = true;
+    });
+    
+    canvas.addEventListener("mousemove", (e) => {
+      if (isMouseDown) {
+        dx += e.offsetX - x
+        dy += e.offsetY - y
+        x = e.offsetX;
+        y = e.offsetY;
+        // if (e.offsetX == 250) dx = 0;
+        // if (e.offsetY == 250) dy = 0;
+      }
+      curx = e.offsetX;
+      cury = e.offsetY;
+    });
+    
+    window.addEventListener("mouseup", (e) => {
+      if (isMouseDown) {
+        x = 0;
+        y = 0;
+        mx = curx;
+        my = cury;
+        isMouseDown = false;
+      }
+    })
   
+    document.addEventListener('wheel', function(e) {
+      scale += e.deltaY / 1000
+      e.preventDefault()
+    })
+
     gl.clearColor(1, 1, 0, 1);
     gl.clear(gl.COLOR_BUFFER_BIT);
   
@@ -57,6 +95,11 @@ function initGL() {
       }
   
       const posLoc = gl.getAttribLocation(program, "in_pos");
+      const dxLoc = gl.getUniformLocation(program, "dx");
+      const dyLoc = gl.getUniformLocation(program, "dy");
+      const mxLoc = gl.getUniformLocation(program, "mx");
+      const myLoc = gl.getUniformLocation(program, "my");
+      const scaleLoc = gl.getUniformLocation(program, "scale");
   
       const posBuf = gl.createBuffer();
       gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
@@ -75,8 +118,14 @@ function initGL() {
         gl.enableVertexAttribArray(posLoc);
         gl.useProgram(program);
         const timeFromStart = Date.now() - start;
-        const loc = gl.getUniformLocation(program, "time");
         gl.uniform1f(loc, timeFromStart / 1000.0);
+        gl.uniform1f(dxLoc, dx);
+        gl.uniform1f(dyLoc, dy);
+        gl.uniform1f(mxLoc, mx);
+        mx = 0
+        gl.uniform1f(myLoc, my);
+        my = 0
+        gl.uniform1f(scaleLoc, scale);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 5);
         window.requestAnimationFrame(render);
       };
