@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<head>
+    <script src="./output/main.js"></script>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <table>
+        <tr>
+            <td><canvas id="glCanvas" width="1100" height="700"></canvas></td>
+            <td>
+                <table>
+                    <select name="Shape" id="ShapeSelector">
+                        <option value="Sphere">Sphere</option>
+                        <option value="Plane">Plane</option>
+                        <option value="Torus">Torus</option>
+                    </select>
+                    <br>
+                    <input type="button" id="SelectButton" value="Create shape"></input>
+                    <br>
+                    <nobr id="AfterSettingsTable"></nobr>
+                    <br>
+                    <input type="button" id="SelectDeletedButton" value="Delete shape"></input>
+                    <nobr id="AfterDeleteSelector"></nobr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
