@@ -14,6 +14,7 @@ export async function FetchWeatherData(lng: number, lat: number) {
             'wind_direction_10m'
         ],
         wind_speed_unit: 'ms',
+        forecast_days: 7
     };
     const url = 'https://api.open-meteo.com/v1/forecast';
     const responses = await fetchWeatherApi(url, params);
