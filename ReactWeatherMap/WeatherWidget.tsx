@@ -4,6 +4,34 @@ function GetDayShift(day1: Date, day2: Date) {
     return Math.floor(((day2.valueOf() - day1.valueOf()) / 3600) * 24 * 1000);
 }
 
+export function WriteWeatherData(weatherData: any) {
+    let dayPara = document.querySelector('#date') as HTMLInputElement;
+    let todayPara = document.querySelector('#todayInfo') as HTMLInputElement;
+    let n = GetDayShift(new Date(todayPara.value), new Date(dayPara.value));
+    let tempPara = document.querySelector(
+        '#weatherOutput'
+    ) as HTMLParagraphElement;
+    let result = '';
+    for (let i = n * 24; i < (n + 1) * 24; i++) {
+        const cells = [
+            document.querySelector(`#row${i}Info0`) as HTMLTableCellElement,
+            document.querySelector(`#row${i}Info1`) as HTMLTableCellElement,
+            document.querySelector(`#row${i}Info2`) as HTMLTableCellElement,
+            document.querySelector(`#row${i}Info3`) as HTMLTableCellElement,
+            document.querySelector(`#row${i}Info4`) as HTMLTableCellElement,
+            document.querySelector(`#row${i}Info5`) as HTMLTableCellElement,
+            document.querySelector(`#row${i}Info6`) as HTMLTableCellElement
+        ];
+        cells[0].innerText = `${i % 24}:00`;
+        cells[1].innerText = `${Math.round(weatherData.hourly.temperature2m[i])}°C`;
+        cells[2].innerText = `${weatherData.hourly.relativeHumidity2m[i]}%`;
+        cells[3].innerText = `${weatherData.hourly.precipitation[i].toFixed(2)}mm`;
+        cells[4].innerText = `${(weatherData.hourly.surfacePressure[i] / 10).toFixed(3)}kPa`;
+        cells[5].innerText = `${weatherData.hourly.cloudCover[i]}%`;
+        cells[6].innerText = `${weatherData.hourly.windSpeed10m[i].toFixed(1)}m/s`;
+    }
+}
+
 export function CreateWidget() {
     function a() {
         return new Date(Date.now());
@@ -288,32 +316,4 @@ export function CreateWidget() {
             </table>
         </div>
     );
-}
-
-export function WriteWeatherData(weatherData: any) {
-    let dayPara = document.querySelector('#date') as HTMLInputElement;
-    let todayPara = document.querySelector('#todayInfo') as HTMLInputElement;
-    let n = GetDayShift(new Date(todayPara.value), new Date(dayPara.value));
-    let tempPara = document.querySelector(
-        '#weatherOutput'
-    ) as HTMLParagraphElement;
-    let result = '';
-    for (let i = n * 24; i < (n + 1) * 24; i++) {
-        const cells = [
-            document.querySelector(`#row${i}Info0`) as HTMLTableCellElement,
-            document.querySelector(`#row${i}Info1`) as HTMLTableCellElement,
-            document.querySelector(`#row${i}Info2`) as HTMLTableCellElement,
-            document.querySelector(`#row${i}Info3`) as HTMLTableCellElement,
-            document.querySelector(`#row${i}Info4`) as HTMLTableCellElement,
-            document.querySelector(`#row${i}Info5`) as HTMLTableCellElement,
-            document.querySelector(`#row${i}Info6`) as HTMLTableCellElement
-        ];
-        cells[0].innerText = `${i % 24}:00`;
-        cells[1].innerText = `${Math.round(weatherData.hourly.temperature2m[i])}°C`;
-        cells[2].innerText = `${weatherData.hourly.relativeHumidity2m[i]}%`;
-        cells[3].innerText = `${weatherData.hourly.precipitation[i].toFixed(2)}mm`;
-        cells[4].innerText = `${(weatherData.hourly.surfacePressure[i] / 10).toFixed(3)}kPa`;
-        cells[5].innerText = `${weatherData.hourly.cloudCover[i]}%`;
-        cells[6].innerText = `${weatherData.hourly.windSpeed10m[i].toFixed(1)}m/s`;
-    }
 }
