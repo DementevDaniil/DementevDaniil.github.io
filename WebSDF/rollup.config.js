@@ -18,7 +18,7 @@ export default {
   },
   plugins: [css(
     {
-      output: 'bundle.css'
+      output: 'main.css'
     }
   ), typescript(), nodeResolve(), commonjs(), replace({
     preventAssignment: false,

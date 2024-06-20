@@ -11,6 +11,9 @@ export function DragDrop() {
         const dt = event.dataTransfer;
         const files = dt.files;
 
+        // let text = `<img id="srcPreviewImage" className="srcPreviewImage">`;
+        // let div = document.querySelector('#dropZone') as HTMLDivElement;
+        // div.innerHTML += text;
         PreviewSource(files[0]);
     }
     function dragOverHandler(event: any) {
@@ -31,7 +34,7 @@ export function DragDrop() {
             onDragEnter={dragEnterHandler}
         >
             <p>Drop file here</p>
-            <img id="srcPreview" className="srcPreviewImage"></img>
+            <canvas id="srcPreviewCanvas" className="srcPreviewCanvas"></canvas>
         </div>
     );
 }

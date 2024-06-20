@@ -1,179 +1,144 @@
 import React, { useState } from 'react';
 
-import { abs, sqrt, min, Vec2 } from './mth';
+import { abs, sqrt, min, Vec2, Vec4 } from './mth';
 
-function IntersectParabolas(p: Vec2, q: Vec2) {
-    return (q.y + q.x * q.x - (p.y + p.x * p.x)) / (2 * q.x - 2 * p.x);
+function IntersectParabolas(p: number, q: number) {
+    return (q * q - p * p) / (2 * (q - p));
 }
 
 function calculateLinearDT(
     allParabolas: Vec2[],
-    hullVertices: Vec2[],
-    hullIntersections: number[],
+    hull: number[],
+    intersections: number[],
     level: number
 ) {
     const INF = 1000;
-    if (allParabolas.length == 0) return;
-    allParabolas.sort((a: Vec2, b: Vec2) => {
-        return a.x - b.x;
-    });
-    hullVertices.push(
-        new Vec2(allParabolas[0].x, abs(allParabolas[0].y - level))
-    );
-    hullIntersections[0] = -INF;
-    hullIntersections[1] = INF;
+    let vertices = [];
+    for (let i = 0; i < allParabolas.length; i++)
+        if (level == allParabolas[i].y) {
+            vertices.push(allParabolas[i].x);
+        }
+    if (vertices.length == 0) return false;
+    intersections[0] = -INF;
+    intersections[1] = INF;
     let k = 0;
-    for (let i = 1; i < allParabolas.length; i++) {
-        let q = new Vec2(allParabolas[i].x, allParabolas[i].y);
-        q.y = abs(q.y - level);
-        let p = new Vec2(hullVertices[k].x, hullVertices[k].y);
-        let s = -INF;
-        let flag = true;
-        while (true) {
-            if (q.x == p.x) {
-                if (p.y < q.y) {
-                    s = INF;
-                    flag = false;
-                    break;
-                } else {
-                    k -= 1;
-                    if (k == -1) break;
-                    p = new Vec2(hullVertices[k].x, hullVertices[k].y);
-                }
-            } else {
-                s = IntersectParabolas(p, q);
-                if (s > hullIntersections[k]) break;
-                k -= 1;
-                p = new Vec2(hullVertices[k].x, hullVertices[k].y);
-            }
+    hull[0] = vertices[0];
+    for (let i = 1; i < vertices.length; i++) {
+        let s = IntersectParabolas(vertices[i], vertices[k]);
+        while (s <= intersections[k]) {
+            k -= 1;
+            s = IntersectParabolas(vertices[i], hull[k]);
         }
-        if (flag) {
-            k += 1;
-            hullVertices[k] = new Vec2(q.x, q.y);
-            hullIntersections[k] = s;
-            hullIntersections[k + 1] = INF;
-        }
+        k += 1;
+        hull[k] = vertices[i];
+        intersections[k] = s;
+        intersections[k + 1] = INF;
     }
+    return true;
 }
 
 function MarchParabolas(
     n: number,
-    hullVertices: Vec2[],
+    hullVertices: number[],
     hullIntersections: number[]
 ) {
+    if (hullVertices.length == 0) return;
     let d = [];
     let k = 0;
     for (let i = 0; i < n; i++) {
         while (hullIntersections[k + 1] < i) k += 1;
-        let dx = i - hullVertices[k].x;
-        d.push(abs(dx * dx + hullVertices[k].y));
+        let dx = i - hullVertices[k];
+        d.push(dx * dx);
     }
     return d;
 }
 
-export function CreateSDF(width: number, height: number, srcImage: number[][]) {
-    // let allParabolasVertices = [];
-    // for (let x = 0; x < width; x++)
-    //     for (let y = 0; y < height; y++) {
-    //         if (srcImage[y][x] == 0) {
-    //             allParabolasVertices.push(new Vec2(x, height - y - 1));
-    //         }
-    //     }
-    // console.log(srcImage);
-    // let hullVertices: Vec2[][];
-    // let hullIntersections: number[][];
-
-    // let linears = [];
-    // hullVertices = new Array(height);
-    // hullIntersections = new Array(height);
-    // for (let i = 0; i < height; i++) {
-    //     hullVertices[i] = new Array();
-    //     hullIntersections[i] = new Array();
-    //     calculateLinearDT(
-    //         allParabolasVertices,
-    //         hullVertices[i],
-    //         hullIntersections[i],
-    //         height - i - 1
-    //     );
-    //     console.log(hullVertices[i]);
-    //     linears[i] = MarchParabolas(
-    //         width,
-    //         hullVertices[i],
-    //         hullIntersections[i]
-    //     );
-    //     console.log(linears[i]);
-    // }
-    // const INF = 16777216;
-    // let resultImage = new Array(height);
-    // for (let i = 0; i < height; i++) {
-    //     resultImage[i] = new Array(width);
-    //     // for (let j = 0; j < width; j++) {
-    //     //     resultImage[i][j] = linears[i][j];
-    //     // }
-    //     resultImage[i].fill(INF);
-    // }
-    // for (let y = 0; y < height; y++)
-    //     for (let x = 0; x < width; x++)
-    //         for (let i of allParabolasVertices)
-    //             for (let xi = 0; xi < linears[i.y].length; xi++) {
-    //                 resultImage[y][x] = min(
-    //                     resultImage[y][x],
-    //                     (y - i.y) * (y - i.y) + linears[i.y][xi]
-    //                 );
-    //             }
-    // calculateLinearDT(allParabolasVertices, hullVertices, hullIntersections);
-    // console.log(hullVertices);
-    // console.log(hullIntersections);
-    // let xResult = MarchParabolas(width, hullVertices, hullIntersections, 0);
-    // console.log(xResult);
-
-    // let rotImage = new Array(width);
-    // for (let i = 0; i < width; i++) {
-    //     rotImage[i] = new Array(height);
-    // }
-    // for (let x = 0; x < width; x++)
-    //     for (let y = 0; y < height; y++) {
-    //         rotImage[width - x - 1][y] = srcImage[y][x];
-    //     }
-    // allParabolasVertices = [];
-    // for (let x = 0; x < height; x++)
-    //     for (let y = 0; y < width; y++) {
-    //         if (rotImage[y][x] == 0) {
-    //             allParabolasVertices.push(new Vec2(x, y));
-    //         }
-    //     }
-    // console.log(rotImage);
-    // hullVertices = [];
-    // hullIntersections = [];
-    // calculateLinearDT(allParabolasVertices, hullVertices, hullIntersections);
-    // console.log(hullVertices);
-    // console.log(hullIntersections);
-    // let yResult = MarchParabolas(height, hullVertices, hullIntersections);
-
-    // let resultImage = new Array(height);
-    // for (let i = 0; i < height; i++) {
-    //     resultImage[i] = new Array(width);
-    // }
-    // for (let x = 0; x < width; x++)
-    //     for (let y = 0; y < height; y++) {
-    //         resultImage[y][x] = xResult[x] + yResult[y];
-    //     }
-    // console.log(yResult);
+function CreateDF(srcImage: Vec4[][], width: number, height: number) {
+    let allParabolasVertices = [];
+    for (let x = 0; x < width; x++)
+        for (let y = 0; y < height; y++) {
+            if (srcImage[y][x].x == 0) {
+                allParabolasVertices.push(new Vec2(x, y));
+            }
+        }
+    if (allParabolasVertices.length == 0) return;
+    allParabolasVertices.sort((a: Vec2, b: Vec2) => {
+        return a.y - b.y;
+    });
+    let allParabolasY = new Set<number>();
+    for (let i = 0; i < allParabolasVertices.length; i++)
+        allParabolasY.add(allParabolasVertices[i].y);
     const INF = 16777216;
     let resultImage = new Array(height);
     for (let i = 0; i < height; i++) {
         resultImage[i] = new Array(width);
         resultImage[i].fill(INF);
     }
+    let hullVertices = new Array(height);
+    let hullIntersections = new Array(height);
+    for (let i = 0; i < height; i++) {
+        hullVertices[i] = new Array(width);
+        hullIntersections[i] = new Array(width);
+        if (
+            !calculateLinearDT(
+                allParabolasVertices,
+                hullVertices[i],
+                hullIntersections[i],
+                i
+            )
+        )
+            continue;
+        resultImage[i] = MarchParabolas(
+            width,
+            hullVertices[i],
+            hullIntersections[i]
+        );
+    }
     for (let y = 0; y < height; y++)
         for (let x = 0; x < width; x++)
-            for (let yi = 0; yi < height; yi++)
-                for (let xi = 0; xi < width; xi++) {
-                    if (srcImage[yi][xi] == 0)
-                        resultImage[y][x] = min(
-                            resultImage[y][x],
-                            (y - yi) * (y - yi) + (x - xi) * (x - xi)
-                        );
-                }
+            for (let yi of allParabolasY)
+                resultImage[y][x] = min(
+                    resultImage[y][x],
+                    (y - yi) * (y - yi) + resultImage[yi][x]
+                );
+    return resultImage;
+}
+
+export function CreateSDF(width: number, height: number, srcImage: Vec4[][]) {
+    let df1 = CreateDF(srcImage, width, height);
+    if (!df1) return;
+    let invertedImage = new Array(height);
+    for (let y = 0; y < height; y++) {
+        invertedImage[y] = new Array(width);
+        for (let x = 0; x < width; x++) {
+            invertedImage[y][x] = new Vec4(
+                255 - srcImage[y][x].x,
+                255 - srcImage[y][x].y,
+                255 - srcImage[y][x].z,
+                srcImage[y][x].w
+            );
+        }
+    }
+    let df2 = CreateDF(invertedImage, width, height);
+    if (!df2) return;
+    let helperImage = new Array(height);
+    for (let i = 0; i < height; i++) {
+        helperImage[i] = new Array(width);
+        for (let j = 0; j < width; j++) {
+            let a = df1[i][j] - df2[i][j];
+            if (a < -1) helperImage[i][j] = 0;
+            else if (a == -1) helperImage[i][j] = 128;
+            else helperImage[i][j] = 255;
+        }
+    }
+    let resultImage = new Array(height);
+    for (let i = 0; i < height; i++) {
+        resultImage[i] = new Array(width);
+        for (let j = 0; j < width; j++) {
+            // if (i == 0 || j == 0) resultImage[i][j] = helperImage[i][j];
+            // else resultImage[i][j] = helperImage[i-1][j-1]+
+            resultImage[i][j] = helperImage[i][j];
+        }
+    }
     return resultImage;
 }
