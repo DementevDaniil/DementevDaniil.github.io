@@ -1,0 +1,20 @@
+.dropZone {
+    width: 200px;
+    height: 400px;
+    background: chocolate;
+    border: dotted 6px brown;
+    margin-bottom: 3px;
+}
+
+.dropZone p {
+    text-align: center;
+    height: 30px;
+    margin: 0px;
+    font: 20px Helvetica, sans-serif;
+}
+
+.srcPreviewCanvas {
+    max-width: 200px;
+    max-height: 370px;
+    position: absolute;
+}
