@@ -33,7 +33,7 @@ export function DragDrop() {
             onDragOver={dragOverHandler}
             onDragEnter={dragEnterHandler}
         >
-            <p>Drop file here</p>
+            <p>Drop source file here</p>
             <canvas id="srcPreviewCanvas" className="srcPreviewCanvas"></canvas>
         </div>
     );

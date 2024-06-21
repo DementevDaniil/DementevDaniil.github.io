@@ -17,8 +17,11 @@ async function onLoad() {
         const root = createRoot(rootElement);
         root.render(
             <div id="globalDiv" className="globalDiv">
-                <DragDrop></DragDrop>
-                <SettingsTable></SettingsTable>
+                <div id="firstPartOfTable" className="firstPartOfTable">
+                    <DragDrop></DragDrop>
+                    <SettingsTable></SettingsTable>
+                </div>
+                <br />
                 <CreateUI></CreateUI>
             </div>
         );

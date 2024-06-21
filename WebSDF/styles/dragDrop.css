@@ -1,5 +1,6 @@
 .dropZone {
-    width: 200px;
+    min-width: 200px;
+    width: 20%;
     height: 400px;
     background: chocolate;
     border: dotted 6px brown;

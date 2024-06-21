@@ -18,11 +18,17 @@ export function DownloadSDF() {
             return res.blob();
         })
         .then((file) => {
-            const ex = getExt(url);
+            // const ex = getExt(url);
             let tUrl = URL.createObjectURL(file);
             const tmp = document.createElement('a');
             tmp.href = tUrl;
-            tmp.download = `font_sdf\.${ex}`;
+            const nf = document.querySelector(
+                '#resultFileName'
+            ) as HTMLInputElement;
+            let name = nf.value;
+            if (name == '') tmp.download = `sdf.png`;
+            else tmp.download = `${name}.png`;
+            nf.value = '';
             document.body.appendChild(tmp);
             tmp.click();
             URL.revokeObjectURL(tUrl);

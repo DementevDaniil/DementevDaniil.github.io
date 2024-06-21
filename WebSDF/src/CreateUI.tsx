@@ -35,7 +35,6 @@ export function CreateUI() {
                         }
                     }
                     let resImg = CreateSDF(prevCan.width, prevCan.height, img);
-                    console.log(resImg);
                     if (!resImg) return;
 
                     let resCan = document.querySelector(
@@ -76,6 +75,11 @@ export function CreateUI() {
                 id="resultPreviewCanvas"
                 className="resultPreviewCanvas"
             ></canvas>
+            <input
+                type="text"
+                id="resultFileName"
+                placeholder="Enter filename before saving"
+            />
             <button
                 className="downloadSDFButton"
                 onClick={() => {
