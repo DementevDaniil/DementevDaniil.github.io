@@ -122,13 +122,14 @@ export function CreateSDF(width: number, height: number, srcImage: Vec4[][]) {
     let df2 = CreateDF(invertedImage, width, height);
     if (!df2) return;
     let helperImage = new Array(height);
+    let sdf = new Array(height);
     for (let i = 0; i < height; i++) {
         helperImage[i] = new Array(width);
         for (let j = 0; j < width; j++) {
             let a = df1[i][j] - df2[i][j];
             if (a < -1) helperImage[i][j] = 0;
             else if (a == -1) helperImage[i][j] = 128;
-            else helperImage[i][j] = 255;
+            else helperImage[i][j] = 5 * a + 128;
         }
     }
     let resultImage = new Array(height);

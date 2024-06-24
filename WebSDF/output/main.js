@@ -23531,9 +23531,71 @@
   // src/CreateUI.tsx
   var import_react = __toESM(require_react(), 1);
 
+  // src/DownloadSDF.tsx
+  function DownloadSDF() {
+    let res = document.querySelector(
+      "#resultPreviewCanvas"
+    );
+    let url = res.toDataURL();
+    fetch(url).then((res2) => {
+      if (!res2.ok) {
+        throw new Error("Network problem");
+      }
+      return res2.blob();
+    }).then((file) => {
+      let tUrl = URL.createObjectURL(file);
+      const tmp = document.createElement("a");
+      tmp.href = tUrl;
+      const nf = document.querySelector(
+        "#resultFileName"
+      );
+      let name = nf.value;
+      if (name == "") tmp.download = `sdf.png`;
+      else tmp.download = `${name}.png`;
+      nf.value = "";
+      document.body.appendChild(tmp);
+      tmp.click();
+      URL.revokeObjectURL(tUrl);
+      tmp.remove();
+    });
+  }
+
+  // src/CreateUI.tsx
+  function CreateUI() {
+    return /* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, /* @__PURE__ */ import_react.default.createElement(
+      "canvas",
+      {
+        id: "resultPreviewCanvas",
+        className: "resultPreviewCanvas"
+      }
+    ), /* @__PURE__ */ import_react.default.createElement(
+      "input",
+      {
+        type: "text",
+        id: "resultFileName",
+        placeholder: "Enter filename before saving"
+      }
+    ), /* @__PURE__ */ import_react.default.createElement(
+      "button",
+      {
+        className: "downloadSDFButton",
+        onClick: () => {
+          DownloadSDF();
+        }
+      },
+      "Download"
+    ));
+  }
+
+  // src/DragDrop.tsx
+  var import_react2 = __toESM(require_react(), 1);
+
   // src/mth.tsx
   var min = (a, b) => {
     return Math.min(a, b);
+  };
+  var floor = (x) => {
+    return Math.floor(x);
   };
   var Vec2 = class _Vec2 {
     x;
@@ -23705,13 +23767,14 @@
     let df2 = CreateDF(invertedImage, width, height);
     if (!df2) return;
     let helperImage = new Array(height);
+    let sdf = new Array(height);
     for (let i = 0; i < height; i++) {
       helperImage[i] = new Array(width);
       for (let j = 0; j < width; j++) {
         let a = df1[i][j] - df2[i][j];
         if (a < -1) helperImage[i][j] = 0;
         else if (a == -1) helperImage[i][j] = 128;
-        else helperImage[i][j] = 255;
+        else helperImage[i][j] = 5 * a + 128;
       }
     }
     let resultImage = new Array(height);
@@ -23723,118 +23786,6 @@
     }
     return resultImage;
   }
-
-  // src/DownloadSDF.tsx
-  function DownloadSDF() {
-    let res = document.querySelector(
-      "#resultPreviewCanvas"
-    );
-    let url = res.toDataURL();
-    fetch(url).then((res2) => {
-      if (!res2.ok) {
-        throw new Error("Network problem");
-      }
-      return res2.blob();
-    }).then((file) => {
-      let tUrl = URL.createObjectURL(file);
-      const tmp = document.createElement("a");
-      tmp.href = tUrl;
-      const nf = document.querySelector(
-        "#resultFileName"
-      );
-      let name = nf.value;
-      if (name == "") tmp.download = `sdf.png`;
-      else tmp.download = `${name}.png`;
-      nf.value = "";
-      document.body.appendChild(tmp);
-      tmp.click();
-      URL.revokeObjectURL(tUrl);
-      tmp.remove();
-    });
-  }
-
-  // src/CreateUI.tsx
-  function CreateUI() {
-    return /* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, /* @__PURE__ */ import_react.default.createElement(
-      "button",
-      {
-        className: "createSDFButton",
-        onClick: () => {
-          let prevCan = document.querySelector(
-            "#srcPreviewCanvas"
-          );
-          let prevCtx = prevCan.getContext("2d");
-          let imgData = prevCtx?.getImageData(
-            0,
-            0,
-            prevCan.width,
-            prevCan.height
-          );
-          if (!imgData) return;
-          let img;
-          img = new Array(prevCan.height);
-          for (let i = 0; i < prevCan.height; i++) {
-            img[i] = new Array(prevCan.width);
-            for (let j = 0; j < prevCan.width * 4; j += 4) {
-              img[i][j / 4] = new Vec4(
-                imgData.data[prevCan.width * i * 4 + j],
-                imgData.data[prevCan.width * i * 4 + j + 1],
-                imgData.data[prevCan.width * i * 4 + j + 2],
-                imgData.data[prevCan.width * i * 4 + j + 3]
-              );
-            }
-          }
-          let resImg = CreateSDF(prevCan.width, prevCan.height, img);
-          if (!resImg) return;
-          let resCan = document.querySelector(
-            "#resultPreviewCanvas"
-          );
-          let resCtx = resCan.getContext("2d");
-          resCan.width = prevCan.width;
-          resCan.height = prevCan.height;
-          let resData = resCtx?.createImageData(
-            resCan.width,
-            resCan.height
-          );
-          let data = resData?.data;
-          if (!data) return;
-          for (let i = 0; i < resCan.height; i++) {
-            img[i] = new Array(resCan.width);
-            for (let j = 0; j < resCan.width * 4; j += 4) {
-              imgData.data[resCan.width * i * 4 + j + 0] = resImg[i][j / 4], imgData.data[resCan.width * i * 4 + j + 1] = resImg[i][j / 4], imgData.data[resCan.width * i * 4 + j + 2] = resImg[i][j / 4], imgData.data[resCan.width * i * 4 + j + 3] = 255;
-            }
-          }
-          resCtx?.putImageData(imgData, 0, 0);
-        }
-      },
-      "Create SDF"
-    ), /* @__PURE__ */ import_react.default.createElement(
-      "canvas",
-      {
-        id: "resultPreviewCanvas",
-        className: "resultPreviewCanvas"
-      }
-    ), /* @__PURE__ */ import_react.default.createElement(
-      "input",
-      {
-        type: "text",
-        id: "resultFileName",
-        placeholder: "Enter filename before saving"
-      }
-    ), /* @__PURE__ */ import_react.default.createElement(
-      "button",
-      {
-        className: "downloadSDFButton",
-        onClick: () => {
-          DownloadSDF();
-        }
-      },
-      "Download"
-    ));
-  }
-
-  // src/DragDrop.tsx
-  var import_react2 = __toESM(require_react(), 1);
 
   // src/PreviewSource.tsx
   function PreviewSource(file) {
@@ -23887,7 +23838,67 @@
         onDragEnter: dragEnterHandler
       },
       /* @__PURE__ */ import_react2.default.createElement("p", null, "Drop source file here"),
-      /* @__PURE__ */ import_react2.default.createElement("canvas", { id: "srcPreviewCanvas", className: "srcPreviewCanvas" })
+      /* @__PURE__ */ import_react2.default.createElement("div", { className: "srcPreviewCanvasDiv" }, /* @__PURE__ */ import_react2.default.createElement(
+        "canvas",
+        {
+          id: "srcPreviewCanvas",
+          className: "srcPreviewCanvas"
+        }
+      )),
+      /* @__PURE__ */ import_react2.default.createElement(
+        "button",
+        {
+          className: "createSDFButton",
+          onClick: () => {
+            let prevCan = document.querySelector(
+              "#srcPreviewCanvas"
+            );
+            let prevCtx = prevCan.getContext("2d");
+            let imgData = prevCtx?.getImageData(
+              0,
+              0,
+              prevCan.width,
+              prevCan.height
+            );
+            if (!imgData) return;
+            let img;
+            img = new Array(prevCan.height);
+            for (let i = 0; i < prevCan.height; i++) {
+              img[i] = new Array(prevCan.width);
+              for (let j = 0; j < prevCan.width * 4; j += 4) {
+                img[i][j / 4] = new Vec4(
+                  imgData.data[prevCan.width * i * 4 + j],
+                  imgData.data[prevCan.width * i * 4 + j + 1],
+                  imgData.data[prevCan.width * i * 4 + j + 2],
+                  imgData.data[prevCan.width * i * 4 + j + 3]
+                );
+              }
+            }
+            let resImg = CreateSDF(prevCan.width, prevCan.height, img);
+            if (!resImg) return;
+            let resCan = document.querySelector(
+              "#resultPreviewCanvas"
+            );
+            let resCtx = resCan.getContext("2d");
+            resCan.width = prevCan.width;
+            resCan.height = prevCan.height;
+            let resData = resCtx?.createImageData(
+              resCan.width,
+              resCan.height
+            );
+            let data = resData?.data;
+            if (!data) return;
+            for (let i = 0; i < resCan.height; i++) {
+              img[i] = new Array(resCan.width);
+              for (let j = 0; j < resCan.width * 4; j += 4) {
+                imgData.data[resCan.width * i * 4 + j + 0] = resImg[i][j / 4], imgData.data[resCan.width * i * 4 + j + 1] = resImg[i][j / 4], imgData.data[resCan.width * i * 4 + j + 2] = resImg[i][j / 4], imgData.data[resCan.width * i * 4 + j + 3] = 255;
+              }
+            }
+            resCtx?.putImageData(imgData, 0, 0);
+          }
+        },
+        "Create SDF"
+      )
     );
   }
 
@@ -23900,7 +23911,7 @@
     const fontIsItalic = (0, import_react3.useRef)(null);
     const personalFontPreviewCanvas = (0, import_react3.useRef)(null);
     const allFontSymbols = (0, import_react3.useRef)(null);
-    return /* @__PURE__ */ import_react3.default.createElement("div", { className: "fontSettingsDiv" }, /* @__PURE__ */ import_react3.default.createElement("p", null, "Or create personalized one"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "fontParamsDiv" }, /* @__PURE__ */ import_react3.default.createElement(
+    return /* @__PURE__ */ import_react3.default.createElement("div", { className: "fontSettingsDiv" }, /* @__PURE__ */ import_react3.default.createElement("p", null, "Or create personalized one"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "fontParamsDiv" }, /* @__PURE__ */ import_react3.default.createElement("div", { style: { width: "100%", height: "30%" } }, /* @__PURE__ */ import_react3.default.createElement(
       "input",
       {
         type: "number",
@@ -23909,13 +23920,33 @@
         max: "64",
         defaultValue: "20"
       }
-    ), /* @__PURE__ */ import_react3.default.createElement("label", { htmlFor: "fontBaseFont" }, "Base font"), /* @__PURE__ */ import_react3.default.createElement("select", { ref: fontBaseFont }, /* @__PURE__ */ import_react3.default.createElement("option", { value: "Arial" }, "Arial"), /* @__PURE__ */ import_react3.default.createElement("option", { value: "Comic Sans" }, "Comic Sans"), /* @__PURE__ */ import_react3.default.createElement("option", { value: "Georgia" }, "Georgia"), /* @__PURE__ */ import_react3.default.createElement("option", { value: "Helvetica" }, "Helvetica"), /* @__PURE__ */ import_react3.default.createElement("option", { value: "Papyrus" }, "Papyrus"), /* @__PURE__ */ import_react3.default.createElement("option", { value: "Times New Roman" }, "Times New Roman")), /* @__PURE__ */ import_react3.default.createElement("input", { type: "checkbox", ref: fontIsBold }), /* @__PURE__ */ import_react3.default.createElement("label", { htmlFor: "fontIsBold" }, "Bold"), /* @__PURE__ */ import_react3.default.createElement("input", { type: "checkbox", ref: fontIsItalic }), /* @__PURE__ */ import_react3.default.createElement("label", { htmlFor: "fontIsItalic" }, "Italic"), /* @__PURE__ */ import_react3.default.createElement(
+    ), /* @__PURE__ */ import_react3.default.createElement("label", { htmlFor: "fontBaseFont" }, "Base font"), /* @__PURE__ */ import_react3.default.createElement("select", { ref: fontBaseFont, id: "fontBaseFont" }, /* @__PURE__ */ import_react3.default.createElement("option", { value: "Arial" }, "Arial"), /* @__PURE__ */ import_react3.default.createElement("option", { value: "Comic Sans" }, "Comic Sans"), /* @__PURE__ */ import_react3.default.createElement("option", { value: "Georgia" }, "Georgia"), /* @__PURE__ */ import_react3.default.createElement("option", { value: "Helvetica" }, "Helvetica"), /* @__PURE__ */ import_react3.default.createElement("option", { value: "Papyrus" }, "Papyrus"), /* @__PURE__ */ import_react3.default.createElement("option", { value: "Times New Roman" }, "Times New Roman")), /* @__PURE__ */ import_react3.default.createElement("input", { type: "checkbox", ref: fontIsBold, id: "fontIsBold" }), /* @__PURE__ */ import_react3.default.createElement("label", { htmlFor: "fontIsBold" }, "Bold"), /* @__PURE__ */ import_react3.default.createElement(
+      "input",
+      {
+        type: "checkbox",
+        ref: fontIsItalic,
+        id: "fontIsItalic"
+      }
+    ), /* @__PURE__ */ import_react3.default.createElement("label", { htmlFor: "fontIsItalic" }, "Italic"), /* @__PURE__ */ import_react3.default.createElement(
+      "textarea",
+      {
+        ref: allFontSymbols,
+        className: "allFontSymbols",
+        placeholder: "Provide a list of desired symbols"
+      }
+    ), /* @__PURE__ */ import_react3.default.createElement(
       "button",
       {
         className: "confirmPersonalSettings",
         onClick: () => {
           if (!personalFontPreviewCanvas.current) return;
-          const ctx = personalFontPreviewCanvas.current.getContext("2d");
+          const ctx = personalFontPreviewCanvas.current.getContext(
+            "2d"
+          );
+          let parent = personalFontPreviewCanvas.current.parentElement;
+          if (!parent) return;
+          personalFontPreviewCanvas.current.width = parent.clientWidth * 0.98;
+          personalFontPreviewCanvas.current.height = parent.clientHeight * 0.5;
           if (!ctx) return;
           ctx.fillStyle = "white";
           ctx.fillRect(
@@ -23925,7 +23956,8 @@
             personalFontPreviewCanvas.current.height
           );
           let fontDescr = "";
-          if (fontIsBold.current?.checked) fontDescr += "bold ";
+          if (fontIsBold.current?.checked)
+            fontDescr += "bold ";
           if (fontIsItalic.current?.checked)
             fontDescr += "italic ";
           fontDescr += fontSize.current?.value + "px ";
@@ -23936,21 +23968,33 @@
           let text = "";
           if (allFontSymbols.current)
             text = allFontSymbols.current.value;
-          ctx.fillText(
-            text,
-            0,
-            personalFontPreviewCanvas.current.height / 2
+          let lineHeight = Number(fontSize.current?.value);
+          let lines = [];
+          let step = floor(
+            text.length * lineHeight / personalFontPreviewCanvas.current.width
+          );
+          console.log(step);
+          for (let i = 0; i < step; i++)
+            lines.push(
+              text.slice(
+                i * personalFontPreviewCanvas.current.width / lineHeight,
+                (i + 1) * personalFontPreviewCanvas.current.width / lineHeight
+              )
+            );
+          console.log(lines);
+          lines.forEach(
+            (line, index) => ctx.fillText(line, 0, (2 + index) * lineHeight)
           );
         }
       },
       "Confirm settings"
-    ), /* @__PURE__ */ import_react3.default.createElement(
+    )), /* @__PURE__ */ import_react3.default.createElement(
       "canvas",
       {
         ref: personalFontPreviewCanvas,
         className: "personalFontPreview"
       }
-    ), /* @__PURE__ */ import_react3.default.createElement(
+    ), /* @__PURE__ */ import_react3.default.createElement("br", null), /* @__PURE__ */ import_react3.default.createElement(
       "button",
       {
         className: "createSDFButton",
@@ -24005,13 +24049,7 @@
         }
       },
       "Create SDF"
-    )), /* @__PURE__ */ import_react3.default.createElement(
-      "textarea",
-      {
-        ref: allFontSymbols,
-        placeholder: "Provide a list of desired symbols"
-      }
-    ));
+    )));
   }
 
   // main.tsx

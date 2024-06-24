@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 
-import { Vec4 } from './mth';
+import { floor, Vec4 } from './mth';
 import { CreateSDF } from './Generator';
 
 export function SettingsTable() {
@@ -15,73 +15,112 @@ export function SettingsTable() {
         <div className="fontSettingsDiv">
             <p>Or create personalized one</p>
             <div className="fontParamsDiv">
-                <input
-                    type="number"
-                    ref={fontSize}
-                    min="1"
-                    max="64"
-                    defaultValue="20"
-                />
-                <label htmlFor="fontBaseFont">Base font</label>
-                <select ref={fontBaseFont}>
-                    <option value="Arial">Arial</option>
-                    <option value="Comic Sans">Comic Sans</option>
-                    <option value="Georgia">Georgia</option>
-                    <option value="Helvetica">Helvetica</option>
-                    <option value="Papyrus">Papyrus</option>
-                    <option value="Times New Roman">Times New Roman</option>
-                </select>
-                <input type="checkbox" ref={fontIsBold} />
-                <label htmlFor="fontIsBold">Bold</label>
-                <input type="checkbox" ref={fontIsItalic} />
-                <label htmlFor="fontIsItalic">Italic</label>
-                <button
-                    className="confirmPersonalSettings"
-                    onClick={() => {
-                        if (!personalFontPreviewCanvas.current) return;
-                        const ctx =
-                            personalFontPreviewCanvas.current.getContext('2d');
-                        if (!ctx) return;
-                        ctx.fillStyle = 'white';
-                        ctx.fillRect(
-                            0,
-                            0,
-                            personalFontPreviewCanvas.current.width,
-                            personalFontPreviewCanvas.current.height
-                        );
-                        let fontDescr = '';
-                        if (fontIsBold.current?.checked) fontDescr += 'bold ';
-                        if (fontIsItalic.current?.checked)
-                            fontDescr += 'italic ';
-                        fontDescr += fontSize.current?.value + 'px ';
-                        fontDescr += fontBaseFont.current?.value;
-                        ctx.fillStyle = 'black';
-                        ctx.font = fontDescr;
-                        ctx.imageSmoothingEnabled = false;
-                        let text = '';
-                        if (allFontSymbols.current)
-                            text = allFontSymbols.current.value;
-                        ctx.fillText(
-                            text,
-                            0,
-                            personalFontPreviewCanvas.current.height / 2
-                        );
-                    }}
-                >
-                    Confirm settings
-                </button>
+                <div style={{ width: '100%', height: '30%' }}>
+                    <input
+                        type="number"
+                        ref={fontSize}
+                        min="1"
+                        max="64"
+                        defaultValue="20"
+                    />
+                    <label htmlFor="fontBaseFont">Base font</label>
+                    <select ref={fontBaseFont} id="fontBaseFont">
+                        <option value="Arial">Arial</option>
+                        <option value="Comic Sans">Comic Sans</option>
+                        <option value="Georgia">Georgia</option>
+                        <option value="Helvetica">Helvetica</option>
+                        <option value="Papyrus">Papyrus</option>
+                        <option value="Times New Roman">Times New Roman</option>
+                    </select>
+                    <input type="checkbox" ref={fontIsBold} id="fontIsBold" />
+                    <label htmlFor="fontIsBold">Bold</label>
+                    <input
+                        type="checkbox"
+                        ref={fontIsItalic}
+                        id="fontIsItalic"
+                    />
+                    <label htmlFor="fontIsItalic">Italic</label>
+                    <textarea
+                        ref={allFontSymbols}
+                        className="allFontSymbols"
+                        placeholder="Provide a list of desired symbols"
+                    ></textarea>
+                    <button
+                        className="confirmPersonalSettings"
+                        onClick={() => {
+                            if (!personalFontPreviewCanvas.current) return;
+                            const ctx =
+                                personalFontPreviewCanvas.current.getContext(
+                                    '2d'
+                                );
+                            let parent =
+                                personalFontPreviewCanvas.current.parentElement;
+                            if (!parent) return;
+                            personalFontPreviewCanvas.current.width =
+                                parent.clientWidth * 0.98;
+                            personalFontPreviewCanvas.current.height =
+                                parent.clientHeight * 0.5;
+                            if (!ctx) return;
+                            ctx.fillStyle = 'white';
+                            ctx.fillRect(
+                                0,
+                                0,
+                                personalFontPreviewCanvas.current.width,
+                                personalFontPreviewCanvas.current.height
+                            );
+                            let fontDescr = '';
+                            if (fontIsBold.current?.checked)
+                                fontDescr += 'bold ';
+                            if (fontIsItalic.current?.checked)
+                                fontDescr += 'italic ';
+                            fontDescr += fontSize.current?.value + 'px ';
+                            fontDescr += fontBaseFont.current?.value;
+                            ctx.fillStyle = 'black';
+                            ctx.font = fontDescr;
+                            ctx.imageSmoothingEnabled = false;
+                            let text = '';
+                            if (allFontSymbols.current)
+                                text = allFontSymbols.current.value;
+                            let lineHeight = Number(fontSize.current?.value);
+                            let lines = [];
+                            let step = floor(
+                                (text.length * lineHeight) /
+                                    personalFontPreviewCanvas.current.width
+                            );
+                            console.log(step);
+                            for (let i = 0; i < step; i++)
+                                lines.push(
+                                    text.slice(
+                                        (i *
+                                            personalFontPreviewCanvas.current
+                                                .width) /
+                                            lineHeight,
+                                        ((i + 1) *
+                                            personalFontPreviewCanvas.current
+                                                .width) /
+                                            lineHeight
+                                    )
+                                );
+                            console.log(lines);
+                            lines.forEach((line, index) =>
+                                ctx.fillText(line, 0, (2 + index) * lineHeight)
+                            );
+                        }}
+                    >
+                        Confirm settings
+                    </button>
+                </div>
                 <canvas
                     ref={personalFontPreviewCanvas}
                     className="personalFontPreview"
                 ></canvas>
+                <br />
                 <button
                     className="createSDFButton"
                     onClick={() => {
                         let prevCan = personalFontPreviewCanvas.current;
                         if (!prevCan) return;
                         let prevCtx = prevCan.getContext('2d');
-                        // let fontImg = prevCan.toDataURL();
-                        // prevCan
                         let imgData = prevCtx?.getImageData(
                             0,
                             0,
@@ -89,7 +128,6 @@ export function SettingsTable() {
                             prevCan.height
                         );
                         if (!imgData) return;
-                        // console.log(imgData);
                         let srcImg: Vec4[][];
                         srcImg = new Array(prevCan.height);
                         for (let i = 0; i < prevCan.height; i++) {
@@ -171,10 +209,6 @@ export function SettingsTable() {
                     Create SDF
                 </button>
             </div>
-            <textarea
-                ref={allFontSymbols}
-                placeholder="Provide a list of desired symbols"
-            ></textarea>
         </div>
     );
 }

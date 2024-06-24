@@ -32,6 +32,10 @@ export const max = (a: number, b: number) => {
     return Math.max(a, b);
 };
 
+export const floor = (x: number) => {
+    return Math.floor(x);
+};
+
 export const clamp = (x: number, a: number, b: number) => {
     return min(max(a, x), b);
 };

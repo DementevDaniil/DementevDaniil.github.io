@@ -5,6 +5,7 @@
     background: chocolate;
     border: dotted 6px brown;
     margin-bottom: 3px;
+    text-align: center;
 }
 
 .dropZone p {
@@ -14,8 +15,12 @@
     font: 20px Helvetica, sans-serif;
 }
 
+.srcPreviewCanvasDiv {
+    height: 330px
+}
+
 .srcPreviewCanvas {
     max-width: 200px;
-    max-height: 370px;
+    max-height: 330px;
     position: absolute;
 }
