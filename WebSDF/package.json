@@ -7,7 +7,7 @@
     "build": "tsc",
     "prettier-format": "prettier --config .prettierrc '*.ts' --write",
     "build:watch": "tsc -w",
-    "build-wasm": "emcc -O1 .\\src\\generator.c -o generator.js -s WASM=1 -s EXPORT_ES6=1 -s MODULARIZE=1 -s EXPORT_NAME='Generator' -s EXPORTED_RUNTIME_METHODS='[\"cwrap\"]' -s ALLOW_MEMORY_GROWTH -g"
+    "build-wasm": "emcc -O1 .\\src\\generator.c -o .\\output\\generator.js -s WASM=1 -s EXPORT_ES6=1 -s MODULARIZE=1 -s EXPORT_NAME='Generator' -s EXPORTED_FUNCTIONS=_CreateSDF,_malloc -s EXPORTED_RUNTIME_METHODS=cwrap,getValue,setValue -s ALLOW_MEMORY_GROWTH -g"
   },
   "author": "",
   "license": "ISC",

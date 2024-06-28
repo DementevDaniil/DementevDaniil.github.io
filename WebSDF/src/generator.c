@@ -1,8 +1,10 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "stdbool.h"
+// #include "../emsdk/upstream/emscripten/system/include/emscripten.h"
 
 #define min(a, b) (((a) < (b)) ? (a) : (b))
+#define max(a, b) (((a) > (b)) ? (a) : (b))
 
 typedef struct tagVec2
 {
@@ -18,49 +20,57 @@ typedef struct tagVec4
     int W;
 } Vec4;
 
-void Swap(Vec2 *a, Vec2 *b)
+void Sort(Vec2 *A, int N)
 {
-    Vec2 temp = *a;
-    *a = *b;
-    *b = temp;
+    Vec2 x;
+
+    for (int i = 1; i < N; i++)
+    {
+        x = A[i];
+        int j = i - 1;
+        while (j >= 0 && A[j].Y > x.Y)
+            A[j + 1] = A[j], j--;
+        A[j + 1] = x;
+    }
 }
 
-int Partition(Vec2 arr[], int low, int high)
+void Swap(Vec2 *A, Vec2 *B)
 {
-    int pivot = arr[low].Y;
-    int i = low;
-    int j = high;
+    Vec2 tmp;
 
-    while (i < j)
-    {
-        while (arr[i].Y <= pivot && i <= high - 1)
-        {
-            i++;
-        }
+    tmp = *A;
 
-        while (arr[j].Y > pivot && j >= low + 1)
-        {
-            j--;
-        }
-
-        if (i < j)
-        {
-            Swap(&arr[i], &arr[j]);
-        }
-    }
-    Swap(&arr[low], &arr[j]);
-    return j;
+    *A = *B;
+    *B = tmp;
 }
 
-void QuickSort(Vec2 *arr, int low, int high)
+void QuickSort(Vec2 *A, int N)
 {
-    if (low < high)
-    {
-        int partitionIndex = Partition(arr, low, high);
+    int e, b;
 
-        QuickSort(arr, low, partitionIndex - 1);
-        QuickSort(arr, partitionIndex + 1, high);
+    Vec2 x = A[N / 2];
+
+    if (N < 2)
+        return;
+
+    b = 0;
+    e = N - 1;
+    while (b <= e)
+    {
+        while (A[b].Y < x.Y)
+            b++;
+        while (A[e].Y > x.Y)
+            e--;
+        if (b <= e)
+        {
+            if (b != e)
+                Swap(&A[b], &A[e]);
+            b++;
+            e--;
+        }
     }
+    QuickSort(A, e + 1);
+    QuickSort(A + b, N - b);
 }
 
 double IntersectParabolas(int p, int q)
@@ -82,7 +92,7 @@ int CalculateLinearDT(
     for (int i = 0; i < NumOfParabolas; i++)
         if (Level == AllParabolas[i].Y)
         {
-            VerticesOnCurrentLevel[i] = (AllParabolas[i].X);
+            VerticesOnCurrentLevel[NumOfVerticesOnCurrentLevel] = (AllParabolas[i].X);
             NumOfVerticesOnCurrentLevel++;
         }
     if (NumOfVerticesOnCurrentLevel == 0)
@@ -104,6 +114,7 @@ int CalculateLinearDT(
         Intersections[k] = s;
         Intersections[k + 1] = INF;
     }
+    free(VerticesOnCurrentLevel);
     return k;
 }
 
@@ -134,15 +145,13 @@ int *CreateDF(Vec4 *SrcImage, int W, int H)
         {
             if (SrcImage[y * W + x].X == 0)
             {
-                Vec2 v;
-                v.X = x, v.Y = y;
-                AllParabolasVertices[NumberOfAllParabolasVertices] = v;
-                NumberOfAllParabolasVertices++;
+                AllParabolasVertices[NumberOfAllParabolasVertices].X = x;
+                AllParabolasVertices[NumberOfAllParabolasVertices++].Y = y;
             }
         }
     if (NumberOfAllParabolasVertices == 0)
         return NULL;
-    QuickSort(AllParabolasVertices, 0, NumberOfAllParabolasVertices);
+    QuickSort(AllParabolasVertices, NumberOfAllParabolasVertices);
     int *AllParabolasY = malloc(NumberOfAllParabolasVertices * sizeof(int));
     int NumberOfAllParabolasY = 0;
     for (int i = 0; i < NumberOfAllParabolasVertices; i++)
@@ -155,46 +164,89 @@ int *CreateDF(Vec4 *SrcImage, int W, int H)
         }
         if (flag)
         {
-            AllParabolasY[NumberOfAllParabolasY] = AllParabolasVertices[i].Y;
-            NumberOfAllParabolasY++;
+            AllParabolasY[NumberOfAllParabolasY++] = AllParabolasVertices[i].Y;
         }
     }
+
     const int INF = 16777216;
     int *ResultImage = malloc(W * H * sizeof(int));
+    int *Linears = malloc(W * H * sizeof(int));
     for (int i = 0; i < W * H; i++)
-        ResultImage[i] = INF;
-    int **HullVertices = malloc(H * sizeof(int));
-    double **HullIntersections = malloc(H * sizeof(double));
+        ResultImage[i] = Linears[i] = INF;
+    int *HullVertices = malloc(W * sizeof(int));
+    double *HullIntersections = malloc(W * sizeof(double));
     for (int i = 0; i < H; i++)
     {
         int NumberOfHullVertices;
-        HullVertices[i] = malloc(W * sizeof(int));
-        HullIntersections[i] = malloc(W * sizeof(double));
         NumberOfHullVertices = CalculateLinearDT(
             AllParabolasVertices,
             NumberOfAllParabolasVertices,
             W,
-            HullVertices[i],
-            HullIntersections[i],
+            HullVertices,
+            HullIntersections,
             i);
         if (!NumberOfHullVertices)
             continue;
         MarchParabolas(
             W,
-            HullVertices[i],
+            HullVertices,
             NumberOfHullVertices,
-            HullIntersections[i], ResultImage + i * H);
+            HullIntersections, Linears + i * W);
     }
     for (int y = 0; y < H; y++)
+    {
         for (int x = 0; x < W; x++)
+        {
             for (int yi = 0; yi < NumberOfAllParabolasY; yi++)
                 ResultImage[y * W + x] = min(
                     ResultImage[y * W + x],
-                    (y - yi) * (y - yi) + ResultImage[yi * W + x]);
+                    (y - AllParabolasY[yi]) * (y - AllParabolasY[yi]) + Linears[AllParabolasY[yi] * W + x]);
+        }
+    }
+
+    free(AllParabolasVertices);
+    free(AllParabolasY);
+    free(HullVertices);
+    free(HullIntersections);
+    free(Linears);
+
     return ResultImage;
 }
 
-int *CreateSDF(int W, int H, int *Img)
+void CreateSDF(int W, int H, int *Img, int *ResultImage)
 {
-    return 0;
+    Vec4 *SrcImage = (Vec4 *)Img;
+    int *df1 = CreateDF(SrcImage, W, H);
+    if (!df1)
+        return;
+    Vec4 *InvertedImage = malloc(sizeof(Vec4) * W * H);
+    for (int y = 0; y < H; y++)
+    {
+        for (int x = 0; x < W; x++)
+        {
+            InvertedImage[y * W + x].X = 255 - SrcImage[y * W + x].X;
+            InvertedImage[y * W + x].Y = 255 - SrcImage[y * W + x].Y;
+            InvertedImage[y * W + x].Z = 255 - SrcImage[y * W + x].Z;
+            InvertedImage[y * W + x].W = 255;
+        }
+    }
+    int *df2 = CreateDF(InvertedImage, W, H);
+    if (!df2)
+        return;
+    for (int i = 0; i < H; i++)
+    {
+        for (int j = 0; j < W; j++)
+        {
+            int a = df1[i * W + j] - df2[i * W + j];
+            if (a < -1)
+                ResultImage[i * W + j] = 0;
+            else if (a == -1)
+                ResultImage[i * W + j] = 128;
+            else
+                ResultImage[i * W + j] = min(a + 128, 255);
+        }
+    }
+    free(df1);
+    free(df2);
+    free(InvertedImage);
 }
