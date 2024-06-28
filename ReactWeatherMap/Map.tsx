@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Map from './node_modules/react-map-gl/dist/es5/exports-maplibre';
+import { Marker } from './node_modules/react-map-gl/dist/es5/exports-maplibre';
 import { FetchWeatherData } from './Weather';
 import { WriteWeatherData } from './WeatherWidget';
 
@@ -31,8 +32,8 @@ export function CreateMap() {
     };
     const [weatherData, setWeatherData] = useState(wd);
     const [isWeatherDataFetched, setWIseatherDataFetched] = useState(false);
-    const [oldLongitude, setOldLongitude] = useState(-480);
-    const [oldLatitude, setOldLatitude] = useState(-350);
+    let [longitude, setLongitude] = useState(-0);
+    let [latitude, setLatitude] = useState(-0);
     return (
         <Map
             id="map"
@@ -52,16 +53,22 @@ export function CreateMap() {
             dragRotate={false}
             touchZoomRotate={false}
             onClick={(e) => {
-                let lat = e.lngLat.lat;
-                let lng = e.lngLat.lng;
-                if (Math.abs(lng) > 180) {
-                    lng -= 360 * Math.sign(lng);
+                setLatitude(e.lngLat.lat);
+                setLongitude(e.lngLat.lng);
+                if (Math.abs(longitude) > 180) {
+                    setLongitude(longitude - 360 * Math.sign(longitude));
                 }
-                FetchWeatherData(lng, lat).then((result) => {
+                FetchWeatherData(longitude, latitude).then((result) => {
                     setWeatherData(result);
                     WriteWeatherData(weatherData);
                 });
             }}
-        />
+        >
+            <Marker
+                color="violet"
+                longitude={longitude}
+                latitude={latitude}
+            ></Marker>
+        </Map>
     );
 }
