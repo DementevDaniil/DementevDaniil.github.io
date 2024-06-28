@@ -1,62 +1,65 @@
-/* styles/global.css */
 .firstPartOfTable {
-  display: flex;
+    display: flex;
 }
-
-/* styles/dragDrop.css */
 .dropZone {
-  min-width: 200px;
-  width: 20%;
-  height: 400px;
-  background: chocolate;
-  border: dotted 6px brown;
-  margin-bottom: 3px;
-  text-align: center;
-}
-.dropZone p {
-  text-align: center;
-  height: 30px;
-  margin: 0px;
-  font: 20px Helvetica, sans-serif;
-}
-.srcPreviewCanvasDiv {
-  height: 330px;
-}
-.srcPreviewCanvas {
-  max-width: 200px;
-  max-height: 330px;
-  position: absolute;
+    min-width: 200px;
+    width: 20%;
+    height: 400px;
+    background: chocolate;
+    border: dotted 6px brown;
+    margin-bottom: 3px;
+    text-align: center;
 }
 
-/* styles/settingsTable.css */
+.dropZone p {
+    text-align: center;
+    height: 30px;
+    margin: 0px;
+    font: 20px Helvetica, sans-serif;
+}
+
+.srcPreviewCanvasDiv {
+    height: 330px
+}
+
+.srcPreviewCanvas {
+    max-width: 200px;
+    max-height: 330px;
+    position: absolute;
+}
+
 .fontSettingsDiv {
-  background-color: lightblue;
-  margin-left: 3px;
-  width: 60%;
-  height: 400px;
-  border: dotted 6px cadetblue;
-  margin-bottom: 3px;
+    background-color: lightblue;
+    margin-left: 3px;
+    width: 60%;
+    height: 400px;
+    border: dotted 6px cadetblue;
+    margin-bottom: 3px;
 }
+
 .fontSettingsDiv p {
-  text-align: center;
-  height: 30px;
-  margin: 0px;
-  font: 20px Helvetica, sans-serif;
+    text-align: center;
+    height: 30px;
+    margin: 0px;
+    font: 20px Helvetica, sans-serif;
 }
+
 .fontParamsDiv {
-  height: 370px;
-  width: 100%;
-  text-align: center;
+    height: 370px;
+    width: 100%;
+    text-align: center;
 }
+
 .personalFontPreview {
-  background-color: white;
-  width: 98%;
-  height: 50%;
-  border: 1px solid black;
-  font-smooth: never;
-  -webkit-font-smoothing: none;
-  display: inline;
+    background-color: white;
+    width: 98%;
+    height: 50%;
+    border: 1px solid black;
+    font-smooth: never;
+    -webkit-font-smoothing: none;
+    display: inline;
 }
+
 .allFontSymbols {
-  resize: none;
+    resize: none;
 }
